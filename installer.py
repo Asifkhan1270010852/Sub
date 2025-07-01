@@ -54,12 +54,8 @@ def install_go_tools():
     for name, cmd in tools.items():
         run_cmd(cmd, f"Installing {name}")
 
-def install_python_libs():
-    print(Fore.GREEN + "🔹 Step 4: Installing Python Libraries...")
-    run_cmd("pip install requests colorama pyfiglet", "Installing Python packages")
-
 def create_api_scripts():
-    print(Fore.GREEN + "🔹 Step 5: Creating API Recon Scripts...")
+    print(Fore.GREEN + "🔹 Step 4: Creating API Recon Scripts...")
     api_dir = os.path.expanduser("~/subdomain_apis")
     os.makedirs(api_dir, exist_ok=True)
 
@@ -131,12 +127,11 @@ def show_summary():
 """)
 
 def main():
-    print_ascii_banner()  # <-- Added custom ASCII "ASIF KHAN"
+    print_ascii_banner()
     print_banner()
     install_dependencies()
     install_golang()
     install_go_tools()
-    install_python_libs()
     create_api_scripts()
     show_summary()
 
