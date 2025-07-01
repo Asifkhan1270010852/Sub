@@ -58,7 +58,7 @@ API Key Files:
 def install_dependencies():
     print(Fore.GREEN + "🔹 Installing system dependencies...")
     run_cmd("sudo apt update -y", "Updating system")
-    run_cmd("sudo apt install git curl python3 python3-pip -y", "Installing Git, Curl, Python3")
+    run_cmd("sudo apt install git curl unzip python3 python3-pip -y", "Installing Git, Curl, Python3")
 
 def install_golang():
     print(Fore.GREEN + "🔹 Checking & Installing GoLang...")
@@ -80,6 +80,34 @@ def install_go_tools():
         else:
             print(Fore.CYAN + f"✅ {name} already installed, skipping...")
 
+def install_python_tools():
+    print(Fore.GREEN + "🔹 Installing Python-based Tools...")
+    tool_dir = os.path.expanduser("~/subdomain_tools")
+    os.makedirs(tool_dir, exist_ok=True)
+
+    # Sublist3r
+    if not os.path.exists(f"{tool_dir}/Sublist3r"):
+        run_cmd(f"git clone https://github.com/aboul3la/Sublist3r.git {tool_dir}/Sublist3r", "Installing Sublist3r")
+        run_cmd(f"pip3 install -r {tool_dir}/Sublist3r/requirements.txt", "Installing Sublist3r dependencies")
+
+    # Knockpy
+    if not os.path.exists(f"{tool_dir}/knock"):
+        run_cmd(f"git clone https://github.com/guelfoweb/knock.git {tool_dir}/knock", "Installing Knockpy")
+        run_cmd(f"pip3 install -r {tool_dir}/knock/requirements.txt", "Installing Knockpy dependencies")
+
+    # OneForAll
+    if not os.path.exists(f"{tool_dir}/OneForAll"):
+        run_cmd(f"git clone https://github.com/shmilylty/OneForAll.git {tool_dir}/OneForAll", "Installing OneForAll")
+        run_cmd(f"pip3 install -r {tool_dir}/OneForAll/requirements.txt", "Installing OneForAll dependencies")
+
+    # Findomain
+    if not is_installed("findomain"):
+        run_cmd("wget https://github.com/findomain/findomain/releases/latest/download/findomain-linux.zip -O findomain.zip", "Downloading Findomain")
+        run_cmd("unzip findomain.zip", "Unzipping Findomain")
+        run_cmd("chmod +x findomain && sudo mv findomain /usr/local/bin/", "Installing Findomain")
+    else:
+        print(Fore.CYAN + "✅ Findomain already installed, skipping...")
+
 def create_api_scripts():
     print(Fore.GREEN + "🔹 Creating API Recon Scripts...")
     api_dir = os.path.expanduser("~/subdomain_apis")
@@ -87,7 +115,7 @@ def create_api_scripts():
     scripts = {
         "crtsh.py": '''import requests, sys
 domain = sys.argv[1]
-url = f\"https://crt.sh/?q=%25.{domain}&output=json\"
+url = f"https://crt.sh/?q=%25.{domain}&output=json"
 r = requests.get(url)
 for entry in r.json():
     for name in entry['name_value'].split('\\n'):
@@ -96,19 +124,19 @@ for entry in r.json():
 domain = sys.argv[1]
 API_KEY = "PASTE_YOUR_API_KEY"
 headers = {"x-apikey": API_KEY}
-r = requests.get(f\"https://www.virustotal.com/api/v3/domains/{domain}/subdomains\", headers=headers)
+r = requests.get(f"https://www.virustotal.com/api/v3/domains/{domain}/subdomains", headers=headers)
 for item in r.json().get('data', []):
     print(item['id'])''',
         "securitytrails.py": '''import requests, sys
 domain = sys.argv[1]
 API_KEY = "PASTE_YOUR_API_KEY"
-r = requests.get(f\"https://api.securitytrails.com/v1/domain/{domain}/subdomains\", headers={"APIKEY": API_KEY})
+r = requests.get(f"https://api.securitytrails.com/v1/domain/{domain}/subdomains", headers={"APIKEY": API_KEY})
 for sub in r.json().get("subdomains", []):
     print(f"{sub}.{domain}")''',
         "shodan.py": '''import requests, sys
 domain = sys.argv[1]
 API_KEY = "PASTE_YOUR_API_KEY"
-url = f\"https://api.shodan.io/dns/domain/{domain}?key={API_KEY}\"
+url = f"https://api.shodan.io/dns/domain/{domain}?key={API_KEY}"
 r = requests.get(url)
 for sub in r.json().get("subdomains", []):
     print(f"{sub}.{domain}")''',
@@ -118,7 +146,7 @@ UID = "PASTE_UID"
 SECRET = "PASTE_SECRET"
 auth = base64.b64encode(f"{UID}:{SECRET}".encode()).decode()
 headers = {"Authorization": f"Basic {auth}"}
-r = requests.get(f\"https://search.censys.io/api/v2/domains/{domain}/subdomains\", headers=headers)
+r = requests.get(f"https://search.censys.io/api/v2/domains/{domain}/subdomains", headers=headers)
 for sub in r.json().get("result", {}).get("subdomains", []):
     print(f"{sub}.{domain}")'''
     }
@@ -131,13 +159,15 @@ for sub in r.json().get("result", {}).get("subdomains", []):
 
 def show_summary():
     print(f"""{Fore.MAGENTA}
-╔════════════════════════════════════╗
-║   ✅ All tools installed!           ║
-╠════════════════════════════════════╣
-║ 🔹 Go tools: assetfinder, subfinder, amass
-║ 🔹 API scripts: ~/subdomain_apis
-║ 🔹 Note: Paste your API keys before running scripts
-╚════════════════════════════════════╝
+╔════════════════════════════════════════════════════════╗
+║   ✅ All tools installed!                             ║
+╠════════════════════════════════════════════════════════╣
+║ 🔹 Go tools: assetfinder, subfinder, amass             ║
+║ 🔹 Python tools: Sublist3r, Knockpy, OneForAll          ║
+║ 🔹 Binary tools: Findomain                             ║
+║ 🔹 API scripts: ~/subdomain_apis                       ║
+║ 🔹 Note: Paste your API keys before running scripts    ║
+╚════════════════════════════════════════════════════════╝
 """)
 
 def main():
@@ -161,6 +191,7 @@ def main():
     install_dependencies()
     install_golang()
     install_go_tools()
+    install_python_tools()
     create_api_scripts()
     show_summary()
 
