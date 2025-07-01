@@ -1,40 +1,65 @@
 import os
 import subprocess
 import sys
+from time import sleep
+from colorama import Fore, Style, init
+from pyfiglet import figlet_format
 
-def run_cmd(cmd):
-    print(f"📦 Running: {cmd}")
-    subprocess.run(cmd, shell=True, check=True)
+init(autoreset=True)
+
+def run_cmd(cmd, desc=""):
+    print(Fore.YELLOW + f"🔧 {desc}")
+    result = subprocess.run(cmd, shell=True)
+    if result.returncode != 0:
+        print(Fore.RED + "❌ Failed: " + cmd)
+        sys.exit(1)
+
+def print_ascii_banner():
+    banner_text = figlet_format("ASIF KHAN", font="slant")
+    print(Fore.BLUE + Style.BRIGHT + banner_text)
+
+def print_banner():
+    banner = f"""
+{Fore.CYAN}{Style.BRIGHT}
+╔═══════════════════════════════════════════════╗
+║     🚀 Subdomain Toolkit Installer (Python)    ║
+╚═══════════════════════════════════════════════╝
+{Style.RESET_ALL}
+"""
+    print(banner)
 
 def install_dependencies():
-    print("🔧 Installing system dependencies...")
-    run_cmd("sudo apt update -y")
-    run_cmd("sudo apt install git curl python3 python3-pip -y")
+    print(Fore.GREEN + "🔹 Step 1: Installing system dependencies...")
+    run_cmd("sudo apt update -y", "Updating system")
+    run_cmd("sudo apt install git curl python3 python3-pip -y", "Installing Git, Curl, Python3")
 
 def install_golang():
+    print(Fore.GREEN + "🔹 Step 2: Checking & Installing GoLang...")
     if subprocess.call("command -v go", shell=True) != 0:
-        print("📦 Installing GoLang...")
-        run_cmd("wget https://go.dev/dl/go1.22.3.linux-amd64.tar.gz")
-        run_cmd("sudo tar -C /usr/local -xzf go1.22.3.linux-amd64.tar.gz")
+        run_cmd("wget https://go.dev/dl/go1.22.3.linux-amd64.tar.gz", "Downloading GoLang")
+        run_cmd("sudo tar -C /usr/local -xzf go1.22.3.linux-amd64.tar.gz", "Extracting Go")
         bashrc = os.path.expanduser("~/.bashrc")
         with open(bashrc, "a") as f:
             f.write('\nexport PATH=$PATH:/usr/local/go/bin:$HOME/go/bin\n')
-        run_cmd("source ~/.bashrc")
+        print(Fore.YELLOW + "🔁 Restart your terminal or run `source ~/.bashrc` after this script.")
     os.makedirs(os.path.expanduser("~/go/bin"), exist_ok=True)
-    os.environ["PATH"] += ":" + os.path.expanduser("~/go/bin")
 
 def install_go_tools():
-    print("🚀 Installing Go-based tools...")
-    run_cmd("go install github.com/tomnomnom/assetfinder@latest")
-    run_cmd("go install github.com/projectdiscovery/subfinder/v2/cmd/subfinder@latest")
-    run_cmd("go install github.com/owasp-amass/amass/v4/...@latest")
+    print(Fore.GREEN + "🔹 Step 3: Installing Go-based Tools...")
+    tools = {
+        "Assetfinder": "go install github.com/tomnomnom/assetfinder@latest",
+        "Subfinder": "go install github.com/projectdiscovery/subfinder/v2/cmd/subfinder@latest",
+        "Amass": "go install github.com/owasp-amass/amass/v4/...@latest"
+    }
+    for name, cmd in tools.items():
+        run_cmd(cmd, f"Installing {name}")
 
 def install_python_libs():
-    print("📦 Installing Python libraries...")
-    run_cmd("pip install requests")
+    print(Fore.GREEN + "🔹 Step 4: Installing Python Libraries...")
+    run_cmd("pip install requests colorama pyfiglet", "Installing Python packages")
 
 def create_api_scripts():
-    print("📝 Creating API-based recon scripts...")
+    print(Fore.GREEN + "🔹 Step 5: Creating API Recon Scripts...")
     api_dir = os.path.expanduser("~/subdomain_apis")
     os.makedirs(api_dir, exist_ok=True)
 
@@ -48,7 +73,6 @@ for entry in r.json():
     for name in entry['name_value'].split('\\n'):
         print(name.strip())
 ''',
-
         "virustotal.py": '''
 import requests, sys
 domain = sys.argv[1]
@@ -58,7 +82,6 @@ r = requests.get(f"https://www.virustotal.com/api/v3/domains/{domain}/subdomains
 for item in r.json().get('data', []):
     print(item['id'])
 ''',
-
         "securitytrails.py": '''
 import requests, sys
 domain = sys.argv[1]
@@ -67,7 +90,6 @@ r = requests.get(f"https://api.securitytrails.com/v1/domain/{domain}/subdomains"
 for sub in r.json().get("subdomains", []):
     print(f"{sub}.{domain}")
 ''',
-
         "shodan.py": '''
 import requests, sys
 domain = sys.argv[1]
@@ -77,7 +99,6 @@ r = requests.get(url)
 for sub in r.json().get("subdomains", []):
     print(f"{sub}.{domain}")
 ''',
-
         "censys.py": '''
 import requests, sys, base64
 domain = sys.argv[1]
@@ -92,26 +113,35 @@ for sub in r.json().get("result", {}).get("subdomains", []):
     }
 
     for name, code in scripts.items():
-        script_path = os.path.join(api_dir, name)
-        with open(script_path, "w") as f:
+        path = os.path.join(api_dir, name)
+        with open(path, "w") as f:
             f.write(code.strip())
-        os.chmod(script_path, 0o755)
+        os.chmod(path, 0o755)
+        print(Fore.CYAN + f"✅ Created: {name}")
+
+def show_summary():
+    print(f"""{Fore.MAGENTA}
+╔════════════════════════════════════╗
+║   ✅ All tools installed!           ║
+╠════════════════════════════════════╣
+║ 🔹 Go tools: assetfinder, subfinder, amass
+║ 🔹 API scripts: ~/subdomain_apis
+║ 🔹 Note: Paste your API keys before running scripts
+╚════════════════════════════════════╝
+""")
 
 def main():
-    print("🚀 Starting Python-based Subdomain Tool Installer...")
+    print_ascii_banner()  # <-- Added custom ASCII "ASIF KHAN"
+    print_banner()
     install_dependencies()
     install_golang()
     install_go_tools()
     install_python_libs()
     create_api_scripts()
-
-    print("\n✅ All tools installed!")
-    print("📦 CLI tools: assetfinder, subfinder, amass")
-    print("📜 API scripts saved in: ~/subdomain_apis")
-    print("⚠️ NOTE: Paste your API keys in the scripts before using them.")
+    show_summary()
 
 if __name__ == "__main__":
     if os.geteuid() != 0:
-        print("❌ Please run this script using: sudo python3 installer.py")
+        print(Fore.RED + "❗ Please run this script with: sudo python3 installer.py")
         sys.exit(1)
     main()
