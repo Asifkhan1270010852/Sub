@@ -63,7 +63,7 @@ def run_findomain(domain):
 
 def run_sublist3r(domain):
     try:
-        output = subprocess.check_output(['sublist3r', '-d', domain, '-o', 'sublist3r_temp.txt'])
+        output = subprocess.check_output(['sublist3r', '-d', domain, '-o', '--recon', 'sublist3r_temp.txt'])
         with open('sublist3r_temp.txt', 'r') as f:
             results = f.read().splitlines()
         os.remove('sublist3r_temp.txt')
