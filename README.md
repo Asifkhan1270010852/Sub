@@ -11,3 +11,8 @@ Subdomain Enumeration tools
 ## Install Tools
 
 ![install](https://github.com/user-attachments/assets/37fc50b4-c993-4fe0-89e1-9550c0f5fac9)
+
+
+## RUN TOOLS 
+
+    sudo python3 Sub.py example.com -o example.txt
