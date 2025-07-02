@@ -16,3 +16,5 @@ Subdomain Enumeration tools
 ## RUN TOOLS 
 
     sudo python3 Sub.py example.com -o example.txt
+    
+![run](https://github.com/user-attachments/assets/832793a9-3ea4-4910-8fe5-ac637baa76d1)
