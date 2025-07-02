@@ -11,9 +11,9 @@ from censys.common.exceptions import CensysUnauthorizedException
 load_dotenv()
 
 # Load all API keys
-VT_API_KEY = os.getenv("VT_API_KEY")
+VT_API_KEY = os.getenv("2ace7d7667a52d8ea360074f084ef6e525e42dfa9030cfae723a0325ca5ddf16")
 ST_API_KEY = os.getenv("ST_API_KEY")
-SHODAN_API_KEY = os.getenv("SHODAN_API_KEY")
+SHODAN_API_KEY = os.getenv("2wbDSGDz4k74sqnsTLWtueBjKvCeALie")
 CENSYS_API_ID = os.getenv("CENSYS_API_ID")
 CENSYS_API_SECRET = os.getenv("CENSYS_API_SECRET")
 
@@ -59,7 +59,7 @@ def run_virustotal(domain):
         return []
     try:
         url = f"https://www.virustotal.com/api/v3/domains/{domain}/subdomains?limit=100"
-        headers = {"x-apikey": VT_API_KEY}
+        headers = {"x-apikey": 2ace7d7667a52d8ea360074f084ef6e525e42dfa9030cfae723a0325ca5ddf16}
         while url:
             res = requests.get(url, headers=headers)
             data = res.json()
@@ -90,7 +90,7 @@ def run_shodan(domain):
     if not SHODAN_API_KEY:
         return []
     try:
-        url = f"https://api.shodan.io/dns/domain/{domain}?key={SHODAN_API_KEY}"
+        url = f"https://api.shodan.io/dns/domain/{domain}?key={2wbDSGDz4k74sqnsTLWtueBjKvCeALie}"
         response = requests.get(url)
         data = response.json()
         for item in data.get("subdomains", []):
