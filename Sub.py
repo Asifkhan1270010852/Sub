@@ -41,7 +41,7 @@ def run_crtsh(domain):
 
 def run_subfinder(domain):
     try:
-        output = subprocess.check_output(['subfinder', '-d', domain, '-silent'])
+        output = subprocess.check_output(['subfinder', '-d', domain, '-silent', '-all'])
         return output.decode().splitlines()
     except:
         return []
