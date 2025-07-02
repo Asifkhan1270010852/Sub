@@ -48,7 +48,7 @@ def run_subfinder(domain):
 
 def run_amass(domain):
     try:
-        output = subprocess.check_output(['amass', 'enum', '-passive', '-d', domain])
+        output = subprocess.check_output(['amass', 'enum', '-active', '-d', domain])
         return output.decode().splitlines()
     except:
         return []
