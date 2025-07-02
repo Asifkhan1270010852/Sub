@@ -10,13 +10,14 @@ from censys.common.exceptions import CensysUnauthorizedException
 
 load_dotenv()
 
-# Load all API keys
-VT_API_KEY = os.getenv("2ace7d7667a52d8ea360074f084ef6e525e42dfa9030cfae723a0325ca5ddf16")
+# Load API keys
+VT_API_KEY = os.getenv("VT_API_KEY")
 ST_API_KEY = os.getenv("ST_API_KEY")
-SHODAN_API_KEY = os.getenv("2wbDSGDz4k74sqnsTLWtueBjKvCeALie")
+SHODAN_API_KEY = os.getenv("SHODAN_API_KEY")
 CENSYS_API_ID = os.getenv("CENSYS_API_ID")
 CENSYS_API_SECRET = os.getenv("CENSYS_API_SECRET")
 
+# Tool Functions
 def run_assetfinder(domain):
     try:
         output = subprocess.check_output(['assetfinder', '--subs-only', domain])
@@ -53,13 +54,45 @@ def run_amass(domain):
     except:
         return []
 
+def run_findomain(domain):
+    try:
+        output = subprocess.check_output(['findomain', '-t', domain, '-q'])
+        return output.decode().splitlines()
+    except:
+        return []
+
+def run_sublist3r(domain):
+    try:
+        output = subprocess.check_output(['sublist3r', '-d', domain, '-o', 'sublist3r_temp.txt'])
+        with open('sublist3r_temp.txt', 'r') as f:
+            results = f.read().splitlines()
+        os.remove('sublist3r_temp.txt')
+        return results
+    except:
+        return []
+
+def run_knockpy(domain):
+    try:
+        output = subprocess.check_output(['knockpy', domain, '-o', '.'])
+        result_file = f"{domain}_knockpy.csv"
+        subdomains = []
+        if os.path.exists(result_file):
+            with open(result_file, 'r') as f:
+                for line in f:
+                    if domain in line:
+                        subdomains.append(line.split(',')[0])
+            os.remove(result_file)
+        return subdomains
+    except:
+        return []
+
 def run_virustotal(domain):
     subdomains = set()
     if not VT_API_KEY:
         return []
     try:
         url = f"https://www.virustotal.com/api/v3/domains/{domain}/subdomains?limit=100"
-        headers = {"x-apikey": 2ace7d7667a52d8ea360074f084ef6e525e42dfa9030cfae723a0325ca5ddf16}
+        headers = {"x-apikey": VT_API_KEY}
         while url:
             res = requests.get(url, headers=headers)
             data = res.json()
@@ -90,7 +123,7 @@ def run_shodan(domain):
     if not SHODAN_API_KEY:
         return []
     try:
-        url = f"https://api.shodan.io/dns/domain/{domain}?key={2wbDSGDz4k74sqnsTLWtueBjKvCeALie}"
+        url = f"https://api.shodan.io/dns/domain/{domain}?key={SHODAN_API_KEY}"
         response = requests.get(url)
         data = response.json()
         for item in data.get("subdomains", []):
@@ -128,7 +161,7 @@ def save_output(subdomains, output_file, json_output=False):
                 f.write(sub + '\n')
 
 def main():
-    parser = argparse.ArgumentParser(description="Python Subdomain Finder Tool (with All APIs)")
+    parser = argparse.ArgumentParser(description="Subdomain Finder with APIs and Tools")
     parser.add_argument("domain", help="Target domain (example.com)")
     parser.add_argument("-o", "--output", default="subdomains.txt", help="Output file name")
     parser.add_argument("-j", "--json", action="store_true", help="Save output in JSON format")
@@ -146,6 +179,9 @@ def main():
         ("crt.sh", run_crtsh),
         ("Subfinder", run_subfinder),
         ("Amass", run_amass),
+        ("Findomain", run_findomain),
+        ("Sublist3r", run_sublist3r),
+        ("Knockpy", run_knockpy),
         ("VirusTotal", run_virustotal),
         ("SecurityTrails", run_securitytrails),
         ("Shodan", run_shodan),
