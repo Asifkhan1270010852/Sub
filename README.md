@@ -1,4 +1,4 @@
-# Subfinder
+# Sub
 Subdomain Enumeration tools 
 
 # Install 
